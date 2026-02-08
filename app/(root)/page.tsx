@@ -7,7 +7,7 @@ const Homepage = () => {
     <>
       <ProductList
         data={sampleData.products}
-        title="Newest Arrivals"
+        title="Recently Refurbished"
         limit={8}
       />
     </>
