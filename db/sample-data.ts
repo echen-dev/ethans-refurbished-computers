@@ -67,7 +67,7 @@ const sampleData = {
       brand: "Dell",
       rating: 4.9,
       numReviews: 3,
-      stock: 1,
+      stock: 0,
       isFeatured: false,
       banner: null,
     },
