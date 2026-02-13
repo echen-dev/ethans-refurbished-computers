@@ -28,7 +28,7 @@ const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
     resolver: zodResolver(shippingAddressSchema),
     defaultValues: address || shippingAddressDefaultValues,
   });
-  const onSubmit = (values) => {
+  const onSubmit = (values: ShippingAddress) => {
     console.log(values);
     return;
   };
