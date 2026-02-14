@@ -60,6 +60,7 @@ export const config = {
     },
     async jwt({ token, user, trigger, session }: any) {
       if (user) {
+        token.id = user.id;
         token.role = user.role;
         if (user.name === "NO_NAME") {
           token.name = user.email.split("@")[0];
@@ -67,6 +68,27 @@ export const config = {
             where: { id: user.id },
             data: { name: token.name },
           });
+        }
+        if (trigger === "signIn" || trigger === "signUp") {
+          const cookieObj = await cookies();
+          const sessionCartId = cookieObj.get("sessionCartId")?.value;
+          if (sessionCartId) {
+            const sessionCart = await prisma.cart.findFirst({
+              where: { sessionCartId },
+            });
+            if (sessionCart) {
+              await prisma.cart.deleteMany({
+                where: { userId: user.id },
+              });
+
+              await prisma.cart.update({
+                where: { id: sessionCart.id },
+                data: {
+                  userId: user.id,
+                },
+              });
+            }
+          }
         }
       }
       return token;
