@@ -1,13 +1,7 @@
-import { auth } from "@/auth";
-import { getMyCart } from "@/lib/actions/cart.actions";
-import { getUserById } from "@/lib/actions/user.actions";
-import { ShippingAddress } from "@/types";
-import { Metadata } from "next";
-import { redirect } from "next/navigation";
-import CheckoutSteps from "@/components/shared/checkout-steps";
+"use client";
+
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -16,59 +10,65 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatCurrency, formatDateTime, formatId } from "@/lib/utils";
+import { Order } from "@/types";
+import Link from "next/link";
 import Image from "next/image";
-import { formatCurrency } from "@/lib/utils";
-import PlaceOrderForm from "./place-order-form";
 
-export const metadata: Metadata = {
-  title: "Place Order",
-};
-
-const PlaceOrderPage = async () => {
-  const cart = await getMyCart();
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) throw new Error("User not found");
-  const user = await getUserById(userId);
-  if (!cart || cart.items.length === 0) redirect("/cart");
-  if (!user.address) redirect("/shipping-address");
-  if (!user.paymentMethod) redirect("/payment-method");
-  const userAddress = user.address as ShippingAddress;
+const OrderDetailsTable = ({ order }: { order: Order }) => {
+  const {
+    id,
+    shippingAddress,
+    orderitems,
+    itemsPrice,
+    shippingPrice,
+    taxPrice,
+    totalPrice,
+    paymentMethod,
+    isDelivered,
+    isPaid,
+    paidAt,
+    deliveredAt,
+  } = order;
+  console.log(orderitems);
   return (
     <>
-      <CheckoutSteps current={3} />
-      <h1 className="py-4 text-2xl">Place Order</h1>
+      <h1 className="py-4 text-2xl">Order {formatId(id)}</h1>
       <div className="grid md:grid-cols-3 md:gap-5">
-        <div className="md:col-span-2 overflow-x-auto space-y-4">
+        <div className="col-span-2 space-y-4 overflow-x-auto">
           <Card>
             <CardContent className="p-4 gap-4">
-              <h2 className="text-2xl pb-4">Shipping Address</h2>
-              <p>{userAddress.fullName}</p>
+              <h2 className="text-xl pb-4 mb-2">Payment Method</h2>
+              <p>{paymentMethod}</p>
+              {isPaid ? (
+                <Badge variant="secondary">
+                  Paid at {formatDateTime(paidAt!).dateTime}
+                </Badge>
+              ) : (
+                <Badge variant="destructive">Not Paid</Badge>
+              )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 gap-4">
+              <h2 className="text-xl pb-4 mb-2">Shipping Address</h2>
+              <p>{shippingAddress.fullName}</p>
               <p>
-                {userAddress.streetAddress}, {userAddress.city}{" "}
-                {userAddress.postalCode} {userAddress.country}
+                {shippingAddress.streetAddress}, {shippingAddress.city}
+                {shippingAddress.postalCode}, {shippingAddress.country}
               </p>
-              <div className="mt-3">
-                <Link href="/shipping-address">
-                  <Button variant="outline">Edit</Button>
-                </Link>
-              </div>
+              {isPaid ? (
+                <Badge variant="secondary">
+                  Delivered at {formatDateTime(deliveredAt!).dateTime}
+                </Badge>
+              ) : (
+                <Badge variant="destructive">Not Delievered</Badge>
+              )}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 gap-4">
-              <h2 className="text-2xl pb-4">Payment Method</h2>
-              <p>{user.paymentMethod}</p>
-              <div className="mt-3">
-                <Link href="/payment-method">
-                  <Button variant="outline">Edit</Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 gap-4">
-              <h2 className="text-2xl pb-4">Order Items</h2>
+              <h2 className="text-xl pb-4">Order Items</h2>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -78,7 +78,7 @@ const PlaceOrderPage = async () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {cart.items.map((item) => (
+                  {orderitems.map((item) => (
                     <TableRow key={item.slug}>
                       <TableCell>
                         <Link
@@ -97,7 +97,7 @@ const PlaceOrderPage = async () => {
                       <TableCell>
                         <span className="px-2">{item.qty}</span>
                       </TableCell>
-                      <TableCell>${item.price}</TableCell>
+                      <TableCell>{item.price}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -110,21 +110,20 @@ const PlaceOrderPage = async () => {
             <CardContent className="p-4 gap-4 space-y-4">
               <div className="flex justify-between">
                 <div>Subtotal</div>
-                <div>{formatCurrency(cart.itemsPrice)}</div>
+                <div>{formatCurrency(itemsPrice)}</div>
               </div>
               <div className="flex justify-between">
                 <div>Tax</div>
-                <div>{formatCurrency(cart.taxPrice)}</div>
+                <div>{formatCurrency(taxPrice)}</div>
               </div>
               <div className="flex justify-between">
                 <div>Shipping</div>
-                <div>{formatCurrency(cart.shippingPrice)}</div>
+                <div>{formatCurrency(shippingPrice)}</div>
               </div>
               <div className="flex justify-between">
                 <div>Grand Total</div>
-                <div>{formatCurrency(cart.totalPrice)}</div>
+                <div>{formatCurrency(totalPrice)}</div>
               </div>
-              <PlaceOrderForm />
             </CardContent>
           </Card>
         </div>
@@ -133,4 +132,4 @@ const PlaceOrderPage = async () => {
   );
 };
 
-export default PlaceOrderPage;
+export default OrderDetailsTable;
