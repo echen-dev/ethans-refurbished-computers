@@ -143,7 +143,7 @@ export async function approvePayPalOrder(
     ) {
       throw new Error("Error in PayPal payment");
     }
-    updateOrderToPaid({
+    await updateOrderToPaid({
       orderId,
       paymentResult: {
         id: captureData.id,
