@@ -18,7 +18,6 @@ const ModeToggle = () => {
 
   useEffect(() => {
     setMounted(true);
-    console.log(theme);
   }, []);
   if (!mounted) {
     return null;
