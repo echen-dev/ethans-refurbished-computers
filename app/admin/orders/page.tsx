@@ -1,7 +1,6 @@
-import { Metadata } from "next";
-import { getMyOrders } from "@/lib/actions/order.actions";
-import { formatCurrency, formatDateTime, formatId } from "@/lib/utils";
-import Link from "next/link";
+import { auth } from "@/auth";
+import Pagination from "@/components/shared/pagination";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,20 +9,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Pagination from "@/components/shared/pagination";
+import { getAllOrders } from "@/lib/actions/order.actions";
+import { formatCurrency, formatDateTime, formatId } from "@/lib/utils";
+import { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "My Orders",
+  title: "Admin Orders",
 };
 
-const OrdersPage = async (props: {
-  searchParams: Promise<{ page: string }>;
+const AdminOrdersPage = async (props: {
+  searchParams: Promise<{
+    page: string;
+  }>;
 }) => {
-  const { page } = await props.searchParams;
-  const orders = await getMyOrders({
-    page: Number(page) || 1,
-  });
-
+  const { page = 1 } = await props.searchParams;
+  const session = await auth();
+  if (session?.user.role !== "admin") throw new Error("User is not authorized");
+  const orders = await getAllOrders({ page: Number(page), limit: 2 });
   return (
     <div className="space-y-2">
       <h2 className="h2-bold">Orders</h2>
@@ -58,9 +61,11 @@ const OrdersPage = async (props: {
                     : "Not Delivered"}
                 </TableCell>
                 <TableCell>
-                  <Link href={`/order/${order.id}`}>
-                    <span className="px-2">Details</span>
-                  </Link>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/order/${order.id}`}>
+                      <span className="px-2">Details</span>
+                    </Link>
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -77,4 +82,4 @@ const OrdersPage = async (props: {
   );
 };
 
-export default OrdersPage;
+export default AdminOrdersPage;

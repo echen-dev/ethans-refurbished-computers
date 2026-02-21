@@ -25,7 +25,6 @@ const AdminOverviewPage = async () => {
     throw new Error("User is not authorized");
   }
   const summary = await getOrderSummary();
-
   return (
     <div className="space-y-2">
       <h1 className="h2-bold">Admin Dashboard</h1>
