@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getAllProducts } from "@/lib/actions/product.actions";
+import { getAllProducts, deleteProduct } from "@/lib/actions/product.actions";
 import { Metadata } from "next";
 import { formatCurrency, formatId } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Pagination from "@/components/shared/pagination";
+import DeleteDialog from "@/components/shared/delete-dialog";
 
 export const metadata: Metadata = {
   title: "Admin Products",
@@ -69,6 +70,7 @@ const AdminProductsPage = async (props: {
                 <Button asChild variant="outline" size="sm">
                   <Link href={`admin/products/${product.id}`}>Edit</Link>
                 </Button>
+                <DeleteDialog id={product.id} action={deleteProduct} />
               </TableCell>
             </TableRow>
           ))}
